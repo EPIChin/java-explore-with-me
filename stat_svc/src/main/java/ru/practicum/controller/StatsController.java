@@ -12,12 +12,10 @@ import ru.practicum.service.StatsService;
 import jakarta.validation.Valid;
 
 import org.springframework.validation.annotation.Validated;
-import java.io.UnsupportedEncodingException;
+
 import java.util.List;
 
-/**
- * Реализация REST-контроллера сервиса статистики
- */
+
 @Validated
 @RestController
 @Slf4j
@@ -25,12 +23,6 @@ import java.util.List;
 public class StatsController {
     private final StatsService statsService;
 
-    /**
-     * Сохранение информации о вызванном эндпоинте
-     *
-     * @param hitDto - DTO для сохранения
-     * @return - текстовый ответ о результате операции
-     */
     @PostMapping("/hit")
     public ResponseEntity<String> postHit(@Valid @RequestBody EndpointHitDto hitDto) {
         log.info("Statistic service: сохранен запрос для эндпоинта {}", hitDto.getUri()); //логируем
@@ -38,16 +30,6 @@ public class StatsController {
         return new ResponseEntity<>("Информация сохранена", HttpStatus.CREATED); //возвращаем текстовый ответ
     }
 
-    /**
-     * Получение статистики по запрошенным URI за заданный период.
-     *
-     * @param start  - начало периода
-     * @param end    - окончание периода
-     * @param uris   - список URI, для которых требуется статтистика (необязательный параметр)
-     * @param unique - флаг учета только запроса с уникальных IP-адресов (по умолчанию = false)
-     * @return список объектов статистики ViewStats по каждому URI
-     * @throws UnsupportedEncodingException - в случае неправильно кодировка параметров start, end
-     */
     @GetMapping("/stats")
     public List<EndpointStats> getStats(@RequestParam(name = "start") String start,
                                         @RequestParam(name = "end") String end,
@@ -58,11 +40,6 @@ public class StatsController {
         return statsService.getStats(requestDto); //получаем статистику от сервиса по запросу
     }
 
-    /**
-     * Запрос всей имеющейся статистики (unique = false)
-     *
-     * @return - статистика по всем URI
-     */
     @GetMapping("/hits")
     public List<EndpointHitDto> getAllHits() {
         log.info("Statistic service: запрошена вся статистика"); //логируем

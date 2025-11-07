@@ -2,9 +2,7 @@ package ru.practicum.dto;
 
 import lombok.*;
 
-/**
- * Класс для выгрузки статистики просмотров по конкретному uri
- */
+
 @Getter
 @Setter
 @AllArgsConstructor

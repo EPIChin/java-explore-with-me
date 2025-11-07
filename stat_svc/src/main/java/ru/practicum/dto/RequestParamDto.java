@@ -3,21 +3,32 @@ package ru.practicum.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * DTO Для передачи параметров запроса в методы сервиса
- */
+import java.util.Arrays;
+import java.util.Objects;
+
 @Getter
 @AllArgsConstructor
 public class RequestParamDto {
-    private final String start; //время начала выборки статистики
-    private final String end; //время конца выборки статистики
-    private final String[] uris; //массив URI
-    private final boolean unique; //флаг уникальности IP- источников запросов в процессе цчета статистики
+    private final String start;
+    private final String end;
+    private final String[] uris;
+    private final boolean unique;
 
-//    public RequestParamDto(String start, String end, String[] uris, boolean unique) {
-//        this.start = start;
-//        this.end = end;
-//        this.uris = uris;
-//        this.unique = unique;
-//    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RequestParamDto that = (RequestParamDto) o;
+        return unique == that.unique &&
+                Objects.equals(start, that.start) &&
+                Objects.equals(end, that.end) &&
+                Arrays.equals(uris, that.uris);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(start, end, unique);
+        result = 31 * result + Arrays.hashCode(uris);
+        return result;
+    }
 }
