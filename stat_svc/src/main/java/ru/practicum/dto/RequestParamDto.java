@@ -3,12 +3,12 @@ package ru.practicum.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.Arrays;
 import java.util.Objects;
 
-@Getter
+@Data
 @AllArgsConstructor
 public class RequestParamDto {
     @NotNull(message = "Параметр start обязателен")
