@@ -1,5 +1,7 @@
 package ru.practicum.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,7 +11,13 @@ import java.util.Objects;
 @Getter
 @AllArgsConstructor
 public class RequestParamDto {
+    @NotNull(message = "Параметр start обязателен")
+    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}",
+            message = "Формат start: yyyy-MM-dd HH:mm:ss")
     private final String start;
+    @NotNull(message = "Параметр end обязателен")
+    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}",
+            message = "Формат end: yyyy-MM-dd HH:mm:ss")
     private final String end;
     private final String[] uris;
     private final boolean unique;

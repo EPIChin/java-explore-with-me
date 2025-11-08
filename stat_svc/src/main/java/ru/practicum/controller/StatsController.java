@@ -25,9 +25,9 @@ public class StatsController {
 
     @PostMapping("/hit")
     public ResponseEntity<String> postHit(@Valid @RequestBody EndpointHitDto hitDto) {
-        log.info("Statistic service: сохранен запрос для эндпоинта {}", hitDto.getUri()); //логируем
+        log.info("Statistic service: сохранен запрос для эндпоинта {}", hitDto.getUri());
         statsService.saveHit(hitDto);
-        return new ResponseEntity<>("Информация сохранена", HttpStatus.CREATED); //возвращаем текстовый ответ
+        return new ResponseEntity<>("Информация сохранена", HttpStatus.CREATED);
     }
 
     @GetMapping("/stats")
@@ -35,14 +35,14 @@ public class StatsController {
                                         @RequestParam(name = "end") String end,
                                         @RequestParam(name = "uris", required = false) String[] uris,
                                         @RequestParam(name = "unique", defaultValue = "false") boolean unique) {
-        log.info("Statistic service: запрошена статистика для эндпоинтов {}", (Object) uris); //логируем
-        RequestParamDto requestDto = new RequestParamDto(start, end, uris, unique); //собираем все параметры запроса в отдельный DTO
-        return statsService.getStats(requestDto); //получаем статистику от сервиса по запросу
+        log.info("Statistic service: запрошена статистика для эндпоинтов {}", (Object) uris);
+        RequestParamDto requestDto = new RequestParamDto(start, end, uris, unique);
+        return statsService.getStats(requestDto);
     }
 
     @GetMapping("/hits")
     public List<EndpointHitDto> getAllHits() {
-        log.info("Statistic service: запрошена вся статистика"); //логируем
+        log.info("Statistic service: запрошена вся статистика");
         return statsService.getAllHits();
     }
 }

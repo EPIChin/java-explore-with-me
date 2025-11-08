@@ -11,12 +11,12 @@ import jakarta.validation.constraints.NotNull;
 public class EndpointHitDto {
     @NotNull
     private int id;
-    @NotBlank
+    @NotBlank(message = "App не может быть пустым")
     private String app;
-    @NotBlank
+    @NotBlank(message = "Uri не может быть пустым")
     private String uri;
-    @NotBlank
+    @NotBlank(message = "IP не может быть пустым")
     private String ip;
-    @NotBlank
+    @NotNull(message = "Timestamp обязателен")
     private String timestamp;
 }
