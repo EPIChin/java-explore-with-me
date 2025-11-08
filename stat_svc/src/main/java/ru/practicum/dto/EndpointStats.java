@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class EndpointStats {
-    private String app; //Название сервиса
-    private String uri; //URI сервиса
-    private long hits; //количество просмотров
+    private String app;
+    private String uri;
+    private long hits;
 }

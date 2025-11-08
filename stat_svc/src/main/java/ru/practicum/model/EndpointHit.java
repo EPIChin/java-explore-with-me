@@ -19,9 +19,9 @@ public class EndpointHit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; // Используем Integer вместо int
+    private Integer id;
 
-    @Column(name = "app", nullable = false) // Обязательное поле
+    @Column(name = "app", nullable = false)
     private String app;
 
     @Column(name = "uri", nullable = false)
