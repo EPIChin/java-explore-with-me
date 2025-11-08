@@ -10,16 +10,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewmStatDB
       - SPRING_DATASOURCE_USERNAME=USER
       - SPRING_DATASOURCE_PASSWORD=1234
-    command: >
-      sh -c "
-        sleep 10 &&  # Задержка на 10 секунд
-        java -jar /app/app.jar
-      "
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U USER -d ewmStatDB -h stats-db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+
 
   stats-db:
     image: postgres:16.1
@@ -30,13 +21,28 @@ services:
       - POSTGRES_DB=ewmStatDB
       - POSTGRES_USER=USER
       - POSTGRES_PASSWORD=1234
-    volumes:
-      - postgres-stats-data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U USER -d ewmStatDB" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
+
+  ewm-service:
+    build: ./main_svc
+    container_name: ewm_main_server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-main-db:5432/ewmMainDB
+      - POSTGRES_USER=USER
+      - POSTGRES_PASSWORD=1234
+
+  ewm-db:
+      image: postgres:16.1
+      container_name: ewm-main-db
+      ports:
+        - "7654:5432"
+      environment:
+        - POSTGRES_DB=ewmMainDB
+        - POSTGRES_USER=USER
+        - POSTGRES_PASSWORD=1234
 volumes:
   postgres-stats-data:
