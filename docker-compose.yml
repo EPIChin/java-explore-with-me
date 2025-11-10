@@ -11,9 +11,9 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U USER -d ewmStatDB" ]
       interval: 5s
-      timeout: 3s
-      retries: 15
-      start_period: 60s
+      timeout: 5s
+      retries: 30
+      start_period: 120s  # Даём на полную инициализацию
 
   stats-server:
     build: ./stat_svc
@@ -22,17 +22,27 @@ services:
       - "9090:9090"
     depends_on:
       - stats-db
-    restart: on-failure        # автоматический перезапуск при падении
+    restart: on-failure
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-stat-db:5432/ewmStatDB
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewmStatDB
       - SPRING_DATASOURCE_USERNAME=USER
       - SPRING_DATASOURCE_PASSWORD=1234
+      # Увеличиваем таймаут подключения к БД
+      - SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT=60000  # 60 секунд
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:9090/actuator/health || exit 1" ]
+      test: [
+        "CMD-SHELL",
+        "curl -f http://localhost:9090/actuator/health || exit 1"
+      ]
       interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 120s
+      timeout: 10s
+      retries: 20
+      start_period: 180s  # Ждём до 3 минут перед первой проверкой
+    # Ключевое: задержка старта на 120 секунд
+    entrypoint: [
+      "/bin/sh", "-c",
+      "sleep 30 && java -jar /app/app.jar"
+    ]
 
   ewm-db:
     image: postgres:16.1
@@ -45,10 +55,10 @@ services:
       - POSTGRES_PASSWORD=1234
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U USER -d ewmMainDB" ]
-      interval: 5s           # чаще проверяем
-      timeout: 3s
-      retries: 15            # больше попыток
-      start_period: 45s      # время на старт
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
 
   ewm-service:
     build: ./main_svc
@@ -62,14 +72,13 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewmMainDB
       - POSTGRES_USER=USER
       - POSTGRES_PASSWORD=1234
+      - SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT=60000
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1" ]
+      test: [
+        "CMD-SHELL",
+        "curl -f http://localhost:8080/actuator/health || exit 1"
+      ]
       interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 60s
-
-networks:
-  ewm-network:
-    name: ewm-network
-    driver: bridge
+      timeout: 10s
+      retries: 20
+      start_period: 180s
