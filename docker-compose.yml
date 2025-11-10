@@ -13,7 +13,10 @@ services:
       interval: 5s
       timeout: 3s
       retries: 15
-      start_period: 45s
+      start_period: 60s
+    volumes:
+      - stats-db-data:/var/lib/postgresql/data
+
 
   stats-server:
     build: ./stat_svc
@@ -27,12 +30,13 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewmStatDB
       - SPRING_DATASOURCE_USERNAME=USER
       - SPRING_DATASOURCE_PASSWORD=1234
+      - JAVA_OPTS=-Xmx1024m -Xms512m
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9090/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://0.0.0.0:9090/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 60s
+      start_period: 120s
     restart: on-failure
 
   ewm-db:
@@ -49,22 +53,30 @@ services:
       interval: 5s
       timeout: 3s
       retries: 15
-      start_period: 45s
+      start_period: 60s
+    volumes:
+      - ewm-db-data:/var/lib/postgresql/data
 
   ewm-service:
     build: ./main_svc
     ports:
       - "8080:8080"
     depends_on:
-      - ewm-db
-      - stats-server
+      ewm-db:
+        condition: service_healthy
+      # Убрали stats-server, если он не критичен
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewmMainDB
-      - POSTGRES_USER=USER
-      - POSTGRES_PASSWORD=1234
+      - SPRING_DATASOURCE_USERNAME=USER
+      - SPRING_DATASOURCE_PASSWORD=1234
+      - JAVA_OPTS=-Xmx1024m -Xms512m
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://0.0.0.0:8080/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 60s
+      start_period: 120s
+
+volumes:
+  stats-db-data:
+  ewm-db-data:
