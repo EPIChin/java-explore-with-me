@@ -6,20 +6,13 @@
 
     <parent>
         <groupId>ru.practicum</groupId>
-        <artifactId>explore-with-me</artifactId>
+        <artifactId>stat_svc</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>stat_svc</artifactId>
-
-    <packaging>pom</packaging>
-    <modules>
-        <module>Server</module>
-        <module>DTO</module>
-    </modules>
+    <artifactId>Server</artifactId>
 
     <properties>
-
     </properties>
 
     <dependencies>
@@ -27,6 +20,12 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>DTO</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -64,7 +63,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -76,7 +75,6 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <!-- УБРАТЬ <release> -->
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

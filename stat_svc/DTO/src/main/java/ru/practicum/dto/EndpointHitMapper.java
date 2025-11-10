@@ -1,7 +1,5 @@
 package ru.practicum.dto;
 
-import ru.practicum.model.EndpointHit;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 

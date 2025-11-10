@@ -7,7 +7,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
     <name>Explore With Me</name>
@@ -24,7 +24,7 @@
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <maven.compiler.version>3.12.1</maven.compiler.version>
 
         <!-- Версии зависимостей -->
@@ -94,6 +94,7 @@
                 <scope>runtime</scope>
             </dependency>
 
+
             <!-- Тестовые зависимости -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -116,6 +117,11 @@
                             <spring.profiles.active>test</spring.profiles.active>
                         </systemPropertyVariables>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.14.0</version> <!-- Обновление -->
                 </plugin>
                 <!-- другие плагины... -->
             </plugins>

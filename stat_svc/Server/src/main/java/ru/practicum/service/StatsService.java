@@ -3,13 +3,13 @@ package ru.practicum.service;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EndpointHitMapper;
 import ru.practicum.dto.EndpointStats;
 import ru.practicum.dto.RequestParamDto;
 import ru.practicum.repository.StatsJpaRepository;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
