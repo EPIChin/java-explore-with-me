@@ -13,7 +13,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 15
-      start_period: 45s
+      start_period: 60s
 
   stats-server:
     build: ./stat_svc
@@ -24,7 +24,7 @@ services:
       - stats-db
     restart: on-failure        # автоматический перезапуск при падении
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewmStatDB
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-stat-db:5432/ewmStatDB
       - SPRING_DATASOURCE_USERNAME=USER
       - SPRING_DATASOURCE_PASSWORD=1234
     healthcheck:
@@ -32,7 +32,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 60s
+      start_period: 120s
 
   ewm-db:
     image: postgres:16.1
@@ -68,3 +68,8 @@ services:
       timeout: 5s
       retries: 12
       start_period: 60s
+
+networks:
+  ewm-network:
+    name: ewm-network
+    driver: bridge
