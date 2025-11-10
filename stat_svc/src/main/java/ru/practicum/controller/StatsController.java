@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.EndpointStats;
 import ru.practicum.dto.RequestParamDto;
+import ru.practicum.exceptions.BadRequestException;
 import ru.practicum.service.StatsService;
 import jakarta.validation.Valid;
 
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Validated
@@ -22,6 +24,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatsController {
     private final StatsService statsService;
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBadRequest(BadRequestException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 
     @PostMapping("/hit")
     public ResponseEntity<String> postHit(@Valid @RequestBody EndpointHitDto hitDto) {
@@ -34,15 +42,9 @@ public class StatsController {
     public List<EndpointStats> getStats(@RequestParam(name = "start") String start,
                                         @RequestParam(name = "end") String end,
                                         @RequestParam(name = "uris", required = false) String[] uris,
-                                        @RequestParam(name = "unique", defaultValue = "false") boolean unique) {
+                                        @RequestParam(name = "unique", defaultValue = "false") boolean unique) throws org.apache.coyote.BadRequestException {
         log.info("Statistic service: запрошена статистика для эндпоинтов {}", (Object) uris);
         RequestParamDto requestDto = new RequestParamDto(start, end, uris, unique);
         return statsService.getStats(requestDto);
-    }
-
-    @GetMapping("/hits")
-    public List<EndpointHitDto> getAllHits() {
-        log.info("Statistic service: запрошена вся статистика");
-        return statsService.getAllHits();
     }
 }

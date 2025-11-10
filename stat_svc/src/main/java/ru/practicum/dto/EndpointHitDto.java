@@ -9,8 +9,6 @@ import jakarta.validation.constraints.NotNull;
 @Getter
 @Setter
 public class EndpointHitDto {
-    @NotNull
-    private int id;
     @NotBlank(message = "App не может быть пустым")
     private String app;
     @NotBlank(message = "Uri не может быть пустым")

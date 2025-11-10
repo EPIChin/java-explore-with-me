@@ -12,7 +12,6 @@ public class EndpointHitMapper {
     public static EndpointHitDto toDto(EndpointHit hit) {
         EndpointHitDto hitDto = new EndpointHitDto();
         hitDto.setIp(hit.getIp());
-        hitDto.setId(hit.getId());
         hitDto.setApp(hit.getApp());
         hitDto.setUri(hit.getUri());
         LocalDateTime hitTimestamp = hit.getTimestamp();
@@ -23,7 +22,6 @@ public class EndpointHitMapper {
     public static EndpointHit toHit(EndpointHitDto hitDto) {
         EndpointHit hit = new EndpointHit();
         hit.setIp(hitDto.getIp());
-        hit.setId(hitDto.getId());
         hit.setApp(hitDto.getApp());
         hit.setUri(hitDto.getUri());
 
