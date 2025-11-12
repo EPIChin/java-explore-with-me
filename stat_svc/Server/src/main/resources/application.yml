@@ -1,9 +1,0 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://stats-db:5432/ewmStatDB
-    username: USER
-    password: 1234
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update  # или validate, если миграции управляются отдельно
