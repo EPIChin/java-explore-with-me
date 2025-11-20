@@ -47,8 +47,8 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventEntity findByUserIdAndEventId(Long userId, Long eventId) {
         return repository.findByInitiatorIdAndId(userId, eventId)
-            .orElseThrow(() -> new NotFoundException(
-                "Событие с id=" + eventId + " не найдено для пользователя с id=" + userId));
+                .orElseThrow(() -> new NotFoundException(
+                        "Событие с id=" + eventId + " не найдено для пользователя с id=" + userId));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class EventServiceImpl implements EventService {
 
         if (entity.getState() != State.PENDING && entity.getState() != State.CANCELED) {
             throw new ConflictException(
-                "Изменить можно только события в статусах PENDING или CANCELED. Текущий статус: " + entity.getState());
+                    "Изменить можно только события в статусах PENDING или CANCELED. Текущий статус: " + entity.getState());
         }
 
         applyCommonUpdates(entity, dto);
@@ -83,9 +83,20 @@ public class EventServiceImpl implements EventService {
         }
         categoryIds = normalizeIdsFilter(categoryIds);
 
+        boolean isRangeStartNull = rangeStart == null;
+        boolean isRangeEndNull = rangeEnd == null;
+
+        // Если rangeStart/rangeEnd null, передаём фиктивное значение (иначе Hibernate ругается)
+        LocalDateTime rs = isRangeStartNull ? LocalDateTime.now() : rangeStart;
+        LocalDateTime re = isRangeEndNull ? LocalDateTime.now() : rangeEnd;
+
+
         Pageable pageable = PageRequest.of(from / size, size);
-        Page<EventEntity> page =
-            repository.searchEvents(userIds, states, categoryIds, rangeStart, rangeEnd, pageable);
+        Page<EventEntity> page = repository.searchEvents(
+                userIds, states, categoryIds,
+                isRangeStartNull, rs,
+                isRangeEndNull, re,
+                pageable);
         return page.getContent();
     }
 
@@ -110,7 +121,6 @@ public class EventServiceImpl implements EventService {
                                               String sort,
                                               int from,
                                               int size) {
-
         validateDateRange(rangeStart, rangeEnd);
 
         LocalDateTime now = LocalDateTime.now();
@@ -121,34 +131,42 @@ public class EventServiceImpl implements EventService {
         String textPattern = buildTextPattern(text);
         Sort sortSpec = resolveSort(sort);
 
+        boolean isRangeStartNull = rangeStart == null;
+        boolean isRangeEndNull = rangeEnd == null;
+
+
+        // Если rangeStart/rangeEnd null, передаём фиктивное значение (иначе Hibernate ругается)
+        LocalDateTime rs = isRangeStartNull ? now : rangeStart;
+        LocalDateTime re = isRangeEndNull ? now : rangeEnd;
+
         Pageable pageable = PageRequest.of(from / size, size, sortSpec);
 
         return repository.findPublicEvents(
-                State.PUBLISHED,
-                text,
-                textPattern,
-                (categories == null || categories.isEmpty()) ? null : categories,
-                paid,
-                rangeStart,
-                rangeEnd,
-                onlyAvailable,
-                Status.CONFIRMED,
-                pageable
-            )
-            .getContent();
+                        State.PUBLISHED,
+                        text,
+                        textPattern,
+                        (categories == null || categories.isEmpty()) ? null : categories,
+                        paid,
+                        isRangeStartNull, rs,
+                        isRangeEndNull, re,
+                        onlyAvailable,
+                        Status.CONFIRMED,
+                        pageable
+                )
+                .getContent();
     }
 
     @Override
     public EventEntity getById(Long id) {
         return repository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Событие с id=" + id + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + id + " не найдено"));
     }
 
     @Override
     public EventEntity findByIdAndInitiatorId(Long eventId, Long userId) {
         return repository.findByInitiatorIdAndId(userId, eventId)
-            .orElseThrow(() -> new NotFoundException(
-                "Событие с id=" + eventId + " и userId=" + userId + " не найдено"));
+                .orElseThrow(() -> new NotFoundException(
+                        "Событие с id=" + eventId + " и userId=" + userId + " не найдено"));
     }
 
     @Override
@@ -159,7 +177,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventEntity findByIdAndState(Long id, State state) {
         return repository.findByIdAndState(id, state)
-            .orElseThrow(() -> new NotFoundException("Событие с id=" + id + " не найдено"));
+                .orElseThrow(() -> new NotFoundException("Событие с id=" + id + " не найдено"));
     }
 
     private void validateEventDateAtLeastTwoHoursAhead(LocalDateTime eventDate) {
@@ -168,7 +186,7 @@ public class EventServiceImpl implements EventService {
         }
         if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new BadRequestException(
-                "Дата и время события должны быть не ранее, чем через 2 часа от текущего момента"
+                    "Дата и время события должны быть не ранее, чем через 2 часа от текущего момента"
             );
         }
     }
@@ -203,7 +221,7 @@ public class EventServiceImpl implements EventService {
 
         if (newEventDate.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new BadRequestException(
-                "Дата и время события должны быть не ранее, чем через 2 часа от текущего момента"
+                    "Дата и время события должны быть не ранее, чем через 2 часа от текущего момента"
             );
         }
 
@@ -234,7 +252,7 @@ public class EventServiceImpl implements EventService {
 
         if (dateToCheck.isBefore(publishTime.plusHours(1))) {
             throw new ConflictException(
-                "Дата начала события должна быть не ранее, чем через час после публикации");
+                    "Дата начала события должна быть не ранее, чем через час после публикации");
         }
 
         entity.setState(State.PUBLISHED);

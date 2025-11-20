@@ -15,64 +15,70 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<EventEntity, Long> {
-    @Query(value = "select * from events where initiator_id = :userId offset :offset limit :limit", nativeQuery = true)
-    Collection<EventEntity> findAllWithLimit(@Param("userId") Long userId,
-                                             @Param("offset") Integer offset,
-                                             @Param("limit") Integer limit);
+    @Query(value = "SELECT * FROM events WHERE initiator_id = :userId OFFSET :offset LIMIT :limit", nativeQuery = true)
+    Collection<EventEntity> findAllWithLimit(
+            @Param("userId") Long userId,
+            @Param("offset") Integer offset,
+            @Param("limit") Integer limit);
 
-    Optional<EventEntity> findByInitiatorIdAndId(Long initiatorId, Long id);
+    Optional<EventEntity> findByInitiatorIdAndId(
+            @Param("initiatorId") Long initiatorId,
+            @Param("id") Long id);
 
-    @Query("""
-        SELECT e FROM EventEntity e
-        WHERE (:userIds IS NULL OR e.initiator.id IN :userIds)
-          AND (:states IS NULL OR e.state IN :states)
-          AND (:categoryIds IS NULL OR e.category.id IN :categoryIds)
-          AND (cast(:rangeStart as localdatetime ) IS NULL OR e.eventDate >= :rangeStart)
-          AND (cast(:rangeEnd as localdatetime ) IS NULL OR e.eventDate <= :rangeEnd)
-        """)
+    @Query("SELECT e FROM EventEntity e " +
+            "WHERE (:userIds IS NULL OR e.initiator.id IN :userIds) " +
+            "  AND (:states IS NULL OR e.state IN :states) " +
+            "  AND (:categoryIds IS NULL OR e.category.id IN :categoryIds) " +
+            "  AND (:isRangeStartNull = TRUE OR e.eventDate >= :rangeStart) " +
+            "  AND (:isRangeEndNull = TRUE OR e.eventDate <= :rangeEnd)")
     Page<EventEntity> searchEvents(
-        @Param("userIds") List<Long> userIds,
-        @Param("states") List<State> states,
-        @Param("categoryIds") List<Long> categoryIds,
-        @Param("rangeStart") LocalDateTime rangeStart,
-        @Param("rangeEnd") LocalDateTime rangeEnd,
-        Pageable pageable);
+            @Param("userIds") List<Long> userIds,
+            @Param("states") List<State> states,
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("isRangeStartNull") boolean isRangeStartNull,
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("isRangeEndNull") boolean isRangeEndNull,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
+            Pageable pageable);
 
-    @Query("""
-        select e from EventEntity e
-        where e.state = :publishedState
-          and (:text is null or (
-                 lower(e.annotation) like :textPattern
-                 or lower(e.description) like :textPattern))
-          and (:categories is null or e.category.id in :categories)
-          and (:paid is null or e.paid = :paid)
-          and (cast(:rangeStart as localdatetime ) is null or e.eventDate >= :rangeStart)
-          and (cast(:rangeEnd as localdatetime ) is null or e.eventDate <= :rangeEnd)
-          and (
-               :onlyAvailable = false
-               or e.participantLimit is null
-               or e.participantLimit = 0
-               or e.participantLimit > (
-                    select count(r) from EventRequestEntity r
-                    where r.event.id = e.id and r.status = :confirmedStatus
-               )
-          )
-        """)
+
+    @Query("SELECT e FROM EventEntity e " +
+            "WHERE e.state = :publishedState " +
+            "  AND (:text IS NULL OR ( " +
+            "       LOWER(e.annotation) LIKE :textPattern " +
+            "       OR LOWER(e.description) LIKE :textPattern)) " +
+            "  AND (:categories IS NULL OR e.category.id IN :categories) " +
+            "  AND (:paid IS NULL OR e.paid = :paid) " +
+            "  AND (:isRangeStartNull = TRUE OR e.eventDate >= :rangeStart) " +
+            "  AND (:isRangeEndNull = TRUE OR e.eventDate <= :rangeEnd) " +
+            "  AND (:onlyAvailable = FALSE " +
+            "       OR e.participantLimit IS NULL " +
+            "       OR e.participantLimit = 0 " +
+            "       OR e.participantLimit > ( " +
+            "           SELECT COUNT(r) FROM EventRequestEntity r " +
+            "           WHERE r.event.id = e.id AND r.status = :confirmedStatus " +
+            "       ))")
     Page<EventEntity> findPublicEvents(
-        @Param("publishedState") State publishedState,
-        @Param("text") String text,
-        @Param("textPattern") String textPattern,
-        @Param("categories") List<Long> categories,
-        @Param("paid") Boolean paid,
-        @Param("rangeStart") LocalDateTime rangeStart,
-        @Param("rangeEnd") LocalDateTime rangeEnd,
-        @Param("onlyAvailable") boolean onlyAvailable,
-        @Param("confirmedStatus") Status confirmedStatus,
-        Pageable pageable);
+            @Param("publishedState") State publishedState,
+            @Param("text") String text,
+            @Param("textPattern") String textPattern,
+            @Param("categories") List<Long> categories,
+            @Param("paid") Boolean paid,
+            @Param("isRangeStartNull") boolean isRangeStartNull,
+            @Param("rangeStart") LocalDateTime rangeStart,
+            @Param("isRangeEndNull") boolean isRangeEndNull,
+            @Param("rangeEnd") LocalDateTime rangeEnd,
+            @Param("onlyAvailable") boolean onlyAvailable,
+            @Param("confirmedStatus") Status confirmedStatus,
+            Pageable pageable);
 
-    Collection<EventEntity> findByIdIn(Collection<Long> ids);
+    Collection<EventEntity> findByIdIn(
+            @Param("ids") Collection<Long> ids);
 
-    Optional<EventEntity> findByIdAndState(Long id, State state);
+    Optional<EventEntity> findByIdAndState(
+            @Param("id") Long id,
+            @Param("state") State state);
 
-    boolean existsByCategoryId(Long categoryId);
+    boolean existsByCategoryId(
+            @Param("categoryId") Long categoryId);
 }
