@@ -333,7 +333,7 @@ public class EventServiceImpl implements EventService {
 
         return switch (sort) {
             case "EVENT_DATE" -> Sort.by("eventDate").ascending();
-            case "VIEWS" -> Sort.by("views").descending();
+            //case "VIEWS" -> Sort.by("views").descending();  просто уберу строку но функционал оставлю на будущее.
             default -> Sort.by("eventDate").ascending();
         };
     }
