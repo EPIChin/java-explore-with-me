@@ -3,11 +3,6 @@ services:
     build: ./stats
     depends_on:
       - stats-db
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h stats-db -p 5432 -U admin -d stats-db"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats-db
       SPRING_DATASOURCE_USERNAME: admin
@@ -24,24 +19,15 @@ services:
     ports:
       - "5440:5432"
     volumes:
-      - stats_pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d stats-db"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 30s  # Даём БД 30 сек на первичную инициализацию
+      - stats_gdata:/var/lib/postgresql/data
 
   ewm-service:
     build: ./ewm-service
     depends_on:
       - ewm-db
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h ewm-db -p 5432 -U admin -d ewm-db"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      - stats-server
     environment:
+      STATS_BASE_URL: http://stats-server:9090
       SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm-db
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
@@ -57,14 +43,8 @@ services:
     ports:
       - "5441:5432"
     volumes:
-      - ewm-pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d ewm-db"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 30s  # Даём БД 30 сек на первичную инициализацию
+      - ewm-data:/var/lib/postgresql/data
 
 volumes:
-  stats_pgdata:
-  ewm-pgdata:
+  stats_gdata:
+  ewm-data:
