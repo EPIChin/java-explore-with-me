@@ -1,0 +1,708 @@
+{
+  "info": {
+    "name": "Комментарии к событиям",
+    "_postman_id": "00000000-0000-0000-0000-000000000000",
+    "description": "Тестирование функциональности комментариев к событиям (public / private / admin). Коллекция создает категорию, пользователя и опубликованное событие, а затем проверяет работу комментариев.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "eventId",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "commentId",
+      "value": ""
+    },
+    {
+      "key": "commentCreated",
+      "value": ""
+    },
+    {
+      "key": "commentText",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Глобально перед каждым запросом ставим timestamp",
+          "pm.collectionVariables.set(\"timestamp\", Date.now());"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Подготовка данных",
+      "item": [
+        {
+          "name": "0.1 Создание категории для комментариев",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Категория для комментариев {{timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201 CREATED при создании категории\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Ответ содержит id категории\", function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('categoryId', json.id);",
+                  "console.log('Создана категория, categoryId = ' + json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.2 Создание пользователя для комментариев",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Пользователь для комментариев {{timestamp}}\",\n  \"email\": \"comments_user_{{timestamp}}@test.local\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201 CREATED при создании пользователя\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Ответ содержит id пользователя\", function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('userId', json.id);",
+                  "console.log('Создан пользователь, userId = ' + json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.3 Создание события для комментариев",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function formatDate(date) {",
+                  "  const pad = (n) => n < 10 ? '0' + n : '' + n;",
+                  "  const year = date.getFullYear();",
+                  "  const month = pad(date.getMonth() + 1);",
+                  "  const day = pad(date.getDate());",
+                  "  const hours = pad(date.getHours());",
+                  "  const minutes = pad(date.getMinutes());",
+                  "  const seconds = pad(date.getSeconds());",
+                  "  return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;",
+                  "}",
+                  "",
+                  "const now = new Date();",
+                  "const eventDate = new Date(now.getTime() + 3 * 60 * 60 * 1000);",
+                  "const eventDateStr = formatDate(eventDate);",
+                  "pm.variables.set('eventDate', eventDateStr);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201 CREATED при создании события\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Ответ содержит id события\", function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('eventId', json.id);",
+                  "console.log('Создано событие, eventId = ' + json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"annotation\": \"Тестовое событие для комментариев\",\n  \"description\": \"Описание тестового события для проверки комментариев\",\n  \"eventDate\": \"{{eventDate}}\",\n  \"paid\": false,\n  \"participantLimit\": 100,\n  \"requestModeration\": false,\n  \"category\": {{categoryId}},\n  \"location\": {\n    \"lat\": 55.75,\n    \"lon\": 37.61\n  },\n  \"title\": \"Событие для теста комментариев {{timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "0.4 Публикация события для комментариев (админ)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stateAction\": \"PUBLISH_EVENT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "events",
+                "{{eventId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200 OK при публикации события\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Состояние события после публикации должно быть PUBLISHED\", function () {",
+                  "    pm.expect(json.state).to.eql('PUBLISHED');",
+                  "});",
+                  "",
+                  "console.log('Событие опубликовано, eventId = ' + pm.collectionVariables.get('eventId'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Комментарии",
+      "item": [
+        {
+          "name": "1. Создание комментария к событию (пользователь)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Первый тестовый комментарий\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/events/{{eventId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "events",
+                "{{eventId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201 CREATED\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Ответ содержит обязательные поля комментария\", function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('eventId');",
+                  "    pm.expect(json).to.have.property('authorId');",
+                  "    pm.expect(json).to.have.property('authorName');",
+                  "    pm.expect(json).to.have.property('text');",
+                  "    pm.expect(json).to.have.property('createdOn');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('commentId', json.id);",
+                  "pm.collectionVariables.set('commentCreated', json.createdOn);",
+                  "pm.collectionVariables.set('commentText', json.text);",
+                  "console.log('Создан комментарий, commentId = ' + json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Публичное получение комментариев события",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/{{eventId}}/comments?from=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "{{eventId}}",
+                "comments"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Ответ должен быть массивом комментариев\", function () {",
+                  "    pm.expect(Array.isArray(json)).to.be.true;",
+                  "});",
+                  "",
+                  "const expectedId = Number(pm.collectionVariables.get('commentId'));",
+                  "const expectedCreated = pm.collectionVariables.get('commentCreated');",
+                  "const expectedText = pm.collectionVariables.get('commentText');",
+                  "",
+                  "const found = json.find(c => c.id === expectedId);",
+                  "",
+                  "pm.test(\"В списке должен присутствовать созданный комментарий\", function () {",
+                  "    pm.expect(found, 'Комментарий с id=' + expectedId + ' не найден в списке').to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"Дата создания комментария должна совпадать с сохраненной\", function () {",
+                  "    pm.expect(found.createdOn).to.eql(expectedCreated);",
+                  "});",
+                  "",
+                  "pm.test(\"Текст комментария должен совпадать с сохраненным\", function () {",
+                  "    pm.expect(found.text).to.eql(expectedText);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Получение комментариев текущего пользователя",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/comments?from=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "comments"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Ответ должен быть массивом\", function () {",
+                  "    pm.expect(Array.isArray(json)).to.be.true;",
+                  "});",
+                  "",
+                  "const expectedId = Number(pm.collectionVariables.get('commentId'));",
+                  "const expectedCreated = pm.collectionVariables.get('commentCreated');",
+                  "const expectedText = pm.collectionVariables.get('commentText');",
+                  "",
+                  "const found = json.find(c => c.id === expectedId);",
+                  "",
+                  "pm.test(\"В списке комментариев пользователя должен присутствовать созданный комментарий\", function () {",
+                  "    pm.expect(found, 'Комментарий с id=' + expectedId + ' не найден среди комментариев пользователя').to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"Дата создания комментария пользователя должна совпадать с сохраненной\", function () {",
+                  "    pm.expect(found.createdOn).to.eql(expectedCreated);",
+                  "});",
+                  "",
+                  "pm.test(\"Текст комментария пользователя должен совпадать с сохраненным\", function () {",
+                  "    pm.expect(found.text).to.eql(expectedText);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Обновление комментария текущего пользователя",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Обновленный комментарий\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "const expectedId = Number(pm.collectionVariables.get('commentId'));",
+                  "const oldCreated = pm.collectionVariables.get('commentCreated');",
+                  "",
+                  "pm.test(\"id комментария не изменился\", function () {",
+                  "    pm.expect(json.id).to.eql(expectedId);",
+                  "});",
+                  "",
+                  "pm.test(\"Дата создания комментария не должна изменяться при редактировании\", function () {",
+                  "    pm.expect(json.createdOn).to.eql(oldCreated);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('commentText', json.text);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Получение комментария по id (админ)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "const expectedId = Number(pm.collectionVariables.get('commentId'));",
+                  "const expectedCreated = pm.collectionVariables.get('commentCreated');",
+                  "const expectedText = pm.collectionVariables.get('commentText');",
+                  "",
+                  "pm.test(\"Админ получает комментарий с корректным id\", function () {",
+                  "    pm.expect(json.id).to.eql(expectedId);",
+                  "});",
+                  "",
+                  "pm.test(\"Дата создания комментария при запросе админом должна совпадать с исходной\", function () {",
+                  "    pm.expect(json.createdOn).to.eql(expectedCreated);",
+                  "});",
+                  "",
+                  "pm.test(\"Текст комментария при запросе админом должен совпадать с последним состоянием\", function () {",
+                  "    pm.expect(json.text).to.eql(expectedText);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Поиск комментариев (админ, по userId и eventId)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/comments?userId={{userId}}&eventId={{eventId}}&from=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "comments"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                },
+                {
+                  "key": "eventId",
+                  "value": "{{eventId}}"
+                },
+                {
+                  "key": "from",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "",
+                  "pm.test(\"Ответ должен быть массивом комментариев\", function () {",
+                  "    pm.expect(Array.isArray(json)).to.be.true;",
+                  "});",
+                  "",
+                  "const expectedId = Number(pm.collectionVariables.get('commentId'));",
+                  "const found = json.find(c => c.id === expectedId);",
+                  "",
+                  "pm.test(\"Созданный комментарий должен присутствовать в результатах поиска админа\", function () {",
+                  "    pm.expect(found, 'Комментарий с id=' + expectedId + ' не найден в результатах поиска').to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Удаление комментария админом",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 204 NO_CONTENT при удалении комментария админом\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Получение удаленного комментария (ожидаем 404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/comments/{{commentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "comments",
+                "{{commentId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"После удаления комментария запрос по id должен возвращать 404 NOT_FOUND\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
