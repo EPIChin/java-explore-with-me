@@ -1,5 +1,7 @@
 # Explore with me - микросервисное приложение-афиша мероприятий
 
+https://github.com/EPIChin/java-explore-with-me/pull/3
+
 Java, Spring (Boot, Data), PostgreSQL, REST API, Docker, Mockito, JUnit, Postman, Lombok
 
 ## О проекте
