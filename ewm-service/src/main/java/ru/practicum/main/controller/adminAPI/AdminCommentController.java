@@ -1,5 +1,7 @@
-package ru.practicum.main.controller.adminC;
+package ru.practicum.main.controller.adminAPI;
 
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +23,12 @@ public class AdminCommentController {
     }
 
     @GetMapping
-    public List<CommentResponseDto> searchComments(@RequestParam(required = false) Long userId,
-                                                   @RequestParam(required = false) Long eventId,
-                                                   @RequestParam(defaultValue = "0") int from,
-                                                   @RequestParam(defaultValue = "10") int size) {
+    public List<CommentResponseDto> searchComments(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Long eventId,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+            @RequestParam(defaultValue = "10") @Positive int size) {
+
         return facade.searchComments(userId, eventId, from, size);
     }
 

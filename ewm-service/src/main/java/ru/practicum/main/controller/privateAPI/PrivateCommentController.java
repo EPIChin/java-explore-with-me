@@ -1,6 +1,8 @@
-package ru.practicum.main.controller.privateC;
+package ru.practicum.main.controller.privateAPI;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +43,8 @@ public class PrivateCommentController {
 
     @GetMapping("/comments")
     public List<CommentResponseDto> getUserComments(@PathVariable Long userId,
-                                                    @RequestParam(defaultValue = "0") int from,
-                                                    @RequestParam(defaultValue = "10") int size) {
+                                                    @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                    @RequestParam(defaultValue = "10") @Positive int size) {
         return facade.getUserComments(userId, from, size);
     }
 }

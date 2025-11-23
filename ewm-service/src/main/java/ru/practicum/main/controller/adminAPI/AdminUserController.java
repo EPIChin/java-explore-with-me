@@ -1,6 +1,8 @@
-package ru.practicum.main.controller.adminC;
+package ru.practicum.main.controller.adminAPI;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +21,8 @@ public class AdminUserController {
 
     @GetMapping
     public List<UserResponseDto> getUsers(@RequestParam(required = false) List<Long> ids,
-                                          @RequestParam(defaultValue = "0") int from,
-                                          @RequestParam(defaultValue = "10") int size) {
+                                          @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                          @RequestParam(defaultValue = "10") @Positive int size) {
         return facade.getUsers(ids, from, size);
     }
 

@@ -28,6 +28,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentEntity addComment(Long userId, Long eventId, CommentEntity comment) {
+        // Проверяем, что событие существует и опубликовано
         EventEntity event = eventService.findByIdAndState(eventId, State.PUBLISHED);
 
         comment.setAuthor(userService.getById(userId));
@@ -39,11 +40,14 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentEntity updateComment(Long userId, Long commentId, String newText) {
         CommentEntity entity = repository.findById(commentId)
-            .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
 
         if (!Objects.equals(entity.getAuthor().getId(), userId)) {
             throw new ConflictException("Пользователь с id=" + userId + " не может редактировать чужой комментарий");
         }
+
+        // Проверяем, что событие комментария существует и опубликовано
+        eventService.findByIdAndState(entity.getEvent().getId(), State.PUBLISHED);
 
         if (newText != null && !newText.isBlank()) {
             entity.setText(newText);
@@ -55,11 +59,14 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(Long userId, Long commentId) {
         CommentEntity entity = repository.findById(commentId)
-            .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
 
         if (!Objects.equals(entity.getAuthor().getId(), userId)) {
             throw new ConflictException("Пользователь с id=" + userId + " не может удалить чужой комментарий");
         }
+
+        // Проверяем, что событие комментария существует и опубликовано
+        eventService.findByIdAndState(entity.getEvent().getId(), State.PUBLISHED);
 
         repository.delete(entity);
     }
@@ -67,19 +74,33 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteCommentByAdmin(Long commentId) {
         CommentEntity entity = repository.findById(commentId)
-            .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
+
+        // Для админа тоже проверяем состояние события
+        eventService.findByIdAndState(entity.getEvent().getId(), State.PUBLISHED);
+
         repository.delete(entity);
     }
 
     @Override
     public CommentEntity getById(Long commentId) {
-        return repository.findById(commentId)
-            .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
+        CommentEntity entity = repository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
+
+        // Проверяем, что событие опубликовано
+        eventService.findByIdAndState(entity.getEvent().getId(), State.PUBLISHED);
+
+        return entity;
     }
 
     @Override
     public List<CommentEntity> searchComments(Long userId, Long eventId, int from, int size) {
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("createdOn").descending());
+
+        if (eventId != null) {
+            // Проверяем, что событие существует и опубликовано
+            eventService.findByIdAndState(eventId, State.PUBLISHED);
+        }
 
         if (userId != null && eventId != null) {
             return repository.findAllByAuthor_IdAndEvent_Id(userId, eventId, pageable).getContent();
@@ -96,6 +117,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentEntity> getCommentsForEvent(Long eventId, int from, int size) {
+        // Проверяем, что событие существует и опубликовано
+        eventService.findByIdAndState(eventId, State.PUBLISHED);
+
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("createdOn").ascending());
         return repository.findAllByEvent_IdOrderByCreatedOnAsc(eventId, pageable).getContent();
     }

@@ -1,6 +1,8 @@
-package ru.practicum.main.controller.privateC;
+package ru.practicum.main.controller.privateAPI;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +33,8 @@ public class PrivateEventController {
 
     @GetMapping
     public List<EventResponseDto> findAllWithLimit(@PathVariable Long userId,
-                                                   @RequestParam(defaultValue = "0") Integer from,
-                                                   @RequestParam(defaultValue = "10") Integer size) {
+                                                   @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                   @RequestParam(defaultValue = "10") @Positive Integer size) {
         return facade.findAllWithLimit(userId, from, size);
     }
 

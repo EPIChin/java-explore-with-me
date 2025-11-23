@@ -1,6 +1,8 @@
-package ru.practicum.main.controller.adminC;
+package ru.practicum.main.controller.adminAPI;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +27,8 @@ public class AdminEventController {
         @RequestParam(required = false) List<Long> categories,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-        @RequestParam(name = "from", defaultValue = "0") Integer from,
-        @RequestParam(name = "size", defaultValue = "10") Integer size) {
+        @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
+        @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
         return facade.searchEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 

@@ -1,5 +1,7 @@
-package ru.practicum.main.controller.publicC;
+package ru.practicum.main.controller.publicAPI;
 
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.main.dto.response.CommentResponseDto;
@@ -16,8 +18,8 @@ public class PublicCommentController {
 
     @GetMapping
     public List<CommentResponseDto> getComments(@PathVariable Long eventId,
-                                                @RequestParam(defaultValue = "0") int from,
-                                                @RequestParam(defaultValue = "10") int size) {
+                                                @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                @RequestParam(defaultValue = "10") @Positive int size) {
         return facade.getEventComments(eventId, from, size);
     }
 }
