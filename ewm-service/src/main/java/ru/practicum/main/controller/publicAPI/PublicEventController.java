@@ -1,6 +1,8 @@
-package ru.practicum.main.controller.publicC;
+package ru.practicum.main.controller.publicAPI;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +30,8 @@ public class PublicEventController {
                                                  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                                  @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                  @RequestParam(required = false) String sort,
-                                                 @RequestParam(defaultValue = "0") Integer from,
-                                                 @RequestParam(defaultValue = "10") Integer size,
+                                                 @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                 @RequestParam(defaultValue = "10") @Positive Integer size,
                                                  HttpServletRequest request) {
 
         return facade.getPublicEvents(
